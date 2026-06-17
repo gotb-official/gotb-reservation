@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GET ON THE BRIDGE Ticket Reservation</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header class="site-hero">
+      <div class="hero-inner">
+        <p class="kicker">Official Ticket Reservation</p>
+        <div class="band-logo" aria-label="GET ON THE BRIDGE">
+          <span class="logo-top">GET ON THE</span>
+          <span class="logo-bottom">BRIDGE</span>
+        </div>
+        <h1>Ticket Reservation</h1>
+      </div>
+    </header>
+
+    <main>
+      <section class="section-block" aria-labelledby="events-heading">
+        <div class="section-head">
+          <p class="section-label">Live Schedule</p>
+          <h2 id="events-heading">予約可能なライブ</h2>
+        </div>
+        <div id="eventsMessage" class="notice">イベントを読み込んでいます...</div>
+        <div id="eventList" class="event-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="reservation-panel" aria-labelledby="reservation-heading">
+        <div class="section-head">
+          <p class="section-label">Reserve</p>
+          <h2 id="reservation-heading">予約フォーム</h2>
+        </div>
+
+        <form id="reservationForm" novalidate>
+          <label for="eventSelect">
+            イベント <span class="required">必須</span>
+          </label>
+          <select id="eventSelect" name="event_id" required>
+            <option value="">イベントを選択してください</option>
+          </select>
+
+          <label for="name">
+            予約名 <span class="required">必須</span>
+          </label>
+          <input id="name" name="name" type="text" autocomplete="name" required placeholder="例：山田 太郎">
+
+          <label for="tickets">
+            枚数 <span class="required">必須</span>
+          </label>
+          <input id="tickets" name="tickets" type="number" min="1" max="10" step="1" inputmode="numeric" required placeholder="1">
+
+          <label for="email">メールアドレス</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="example@mail.com">
+
+          <label for="note">備考</label>
+          <textarea id="note" name="note" rows="4" placeholder="連絡事項があれば入力してください"></textarea>
+
+          <button id="submitButton" class="submit-button" type="submit">予約を送信する</button>
+          <p id="formMessage" class="form-message" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      <small>GET ON THE BRIDGE</small>
+    </footer>
+
+    <div id="flyerModal" class="flyer-modal" aria-hidden="true">
+      <button id="flyerModalClose" class="flyer-modal-close" type="button" aria-label="閉じる">×</button>
+      <img id="flyerModalImage" class="flyer-modal-image" src="" alt="">
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
