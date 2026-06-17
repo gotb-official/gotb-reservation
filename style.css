@@ -149,11 +149,34 @@ main {
 }
 
 .event-grid {
-  display: grid;
+  display: flex;
   gap: 16px;
+  margin-right: -18px;
+  padding: 2px 18px 14px 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-left: 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.event-grid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.event-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.event-grid::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--red), var(--orange));
 }
 
 .event-card {
+  flex: 0 0 88vw;
+  max-width: 420px;
+  scroll-snap-align: start;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -250,6 +273,36 @@ main {
 .event-meta dd {
   margin: 0;
   text-align: right;
+}
+
+.public-note {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 12px;
+  border: 1px solid rgba(255, 106, 0, 0.5);
+  border-left: 4px solid var(--orange);
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(255, 106, 0, 0.14), rgba(23, 168, 232, 0.08));
+}
+
+.public-note-label {
+  width: fit-content;
+  padding: 2px 7px;
+  background: var(--orange);
+  color: #000;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.public-note-text {
+  margin: 0;
+  color: #fff;
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.5;
 }
 
 .reserve-button,
@@ -434,7 +487,17 @@ footer {
   }
 
   .event-grid {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-right: 0;
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .event-card {
+    max-width: none;
+    scroll-snap-align: none;
   }
 
   .reservation-panel {

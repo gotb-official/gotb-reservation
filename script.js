@@ -23,6 +23,31 @@ function createText(value, fallback = "-") {
   return value && String(value).trim() ? String(value).trim() : fallback;
 }
 
+function hasText(value) {
+  return Boolean(value && String(value).trim());
+}
+
+function warnDuplicateEventIds(events) {
+  const seenEventIds = new Set();
+  const duplicateEventIds = new Set();
+
+  events.forEach((event) => {
+    if (!event || !hasText(event.event_id)) {
+      return;
+    }
+
+    const eventId = String(event.event_id).trim();
+    if (seenEventIds.has(eventId)) {
+      duplicateEventIds.add(eventId);
+    }
+    seenEventIds.add(eventId);
+  });
+
+  duplicateEventIds.forEach((eventId) => {
+    console.warn("Duplicate event_id found", eventId);
+  });
+}
+
 function openFlyerModal(src, alt) {
   lastFocusedElement = document.activeElement;
   flyerModalImage.src = src;
@@ -49,7 +74,18 @@ function closeFlyerModal() {
   }
 }
 
+function selectEventForReservation(eventId) {
+  eventSelect.value = eventId;
+  formMessage.textContent = "";
+  formMessage.className = "form-message";
+  reservationForm.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById("name").focus({ preventScroll: true });
+}
+
 function renderEvents(events) {
+  const sourceEvents = Array.isArray(events) ? events : [];
+  warnDuplicateEventIds(sourceEvents);
+
   openEvents = Array.isArray(events)
     ? events.filter((event) => event && event.status === "open")
     : [];
@@ -66,28 +102,29 @@ function renderEvents(events) {
 
   openEvents.forEach((event) => {
     const option = document.createElement("option");
-    option.value = event.event_id;
+    option.value = createText(event.event_id, "");
     option.textContent = `${createText(event.date)} / ${createText(event.title)}`;
     option.dataset.title = createText(event.title);
     eventSelect.appendChild(option);
 
     const card = document.createElement("article");
     card.className = "event-card";
+    card.dataset.eventId = createText(event.event_id, "");
 
-    if (event.flyer_url && String(event.flyer_url).trim()) {
+    if (hasText(event.flyer_url)) {
       const flyerButton = document.createElement("button");
       flyerButton.type = "button";
       flyerButton.className = "flyer-button";
       flyerButton.setAttribute("aria-label", `${createText(event.title)} のフライヤーを拡大表示`);
 
       const image = document.createElement("img");
-      image.src = event.flyer_url;
+      image.src = String(event.flyer_url).trim();
       image.alt = `${createText(event.title)} flyer`;
       image.loading = "lazy";
 
       flyerButton.appendChild(image);
       flyerButton.addEventListener("click", () => {
-        openFlyerModal(event.flyer_url, image.alt);
+        openFlyerModal(String(event.flyer_url).trim(), image.alt);
       });
       card.appendChild(flyerButton);
     }
@@ -119,19 +156,35 @@ function renderEvents(events) {
       meta.appendChild(row);
     });
 
+    const publicNote = document.createElement("div");
+    publicNote.className = "public-note";
+
+    if (hasText(event.public_note)) {
+      const publicNoteLabel = document.createElement("span");
+      publicNoteLabel.className = "public-note-label";
+      publicNoteLabel.textContent = "INFO";
+
+      const publicNoteText = document.createElement("p");
+      publicNoteText.className = "public-note-text";
+      publicNoteText.textContent = String(event.public_note).trim();
+
+      publicNote.append(publicNoteLabel, publicNoteText);
+    }
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = "reserve-button";
+    button.dataset.eventId = createText(event.event_id, "");
     button.textContent = "予約する";
     button.addEventListener("click", () => {
-      eventSelect.value = event.event_id;
-      formMessage.textContent = "";
-      formMessage.className = "form-message";
-      reservationForm.scrollIntoView({ behavior: "smooth", block: "start" });
-      document.getElementById("name").focus({ preventScroll: true });
+      selectEventForReservation(button.dataset.eventId);
     });
 
-    body.append(date, title, meta, button);
+    body.append(date, title, meta);
+    if (hasText(event.public_note)) {
+      body.appendChild(publicNote);
+    }
+    body.appendChild(button);
     card.appendChild(body);
     eventList.appendChild(card);
   });
