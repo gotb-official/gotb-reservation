@@ -250,6 +250,14 @@ main {
   line-height: 1.15;
 }
 
+.event-presenter {
+  margin: 0 0 5px;
+  color: var(--blue);
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
 .event-meta {
   display: grid;
   gap: 8px;

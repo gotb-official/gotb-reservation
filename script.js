@@ -48,6 +48,78 @@ function warnDuplicateEventIds(events) {
   });
 }
 
+function getDateSortKey(event) {
+  if (event && event.date_sort && /^\d{4}-\d{2}-\d{2}$/.test(String(event.date_sort).trim())) {
+    return String(event.date_sort).trim();
+  }
+
+  const digits = String((event && event.date) || "").replace(/\D/g, "");
+  if (digits.length >= 8) {
+    return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+  }
+
+  return "";
+}
+
+function sortEventsByDate(events) {
+  return events.slice().sort((a, b) => {
+    const aKey = getDateSortKey(a);
+    const bKey = getDateSortKey(b);
+
+    if (!aKey && !bKey) return 0;
+    if (!aKey) return 1;
+    if (!bKey) return -1;
+    return aKey.localeCompare(bKey);
+  });
+}
+
+function getTicketType(event) {
+  if (hasText(event.ticket_type)) {
+    return String(event.ticket_type).trim();
+  }
+
+  if (hasText(event.adv_price) || hasText(event.door_price)) {
+    return "adv_door";
+  }
+
+  return "none";
+}
+
+function getTicketDisplay(event) {
+  const ticketType = getTicketType(event);
+
+  if (ticketType === "adv_door") {
+    const advPrice = hasText(event.adv_price) ? String(event.adv_price).trim() : "";
+    const doorPrice = hasText(event.door_price) ? String(event.door_price).trim() : "";
+    if (!advPrice && !doorPrice) {
+      return null;
+    }
+    return {
+      label: "ADV / DOOR",
+      value: `${advPrice || "-"} / ${doorPrice || "-"}`
+    };
+  }
+
+  if (ticketType === "single") {
+    if (!hasText(event.ticket_price)) {
+      return null;
+    }
+    return {
+      label: "TICKET",
+      value: String(event.ticket_price).trim()
+    };
+  }
+
+  if (ticketType === "free") {
+    return {
+      label: "TICKET",
+      value: "FREE"
+    };
+  }
+
+  return null;
+}
+
 function openFlyerModal(src, alt) {
   lastFocusedElement = document.activeElement;
   flyerModalImage.src = src;
@@ -86,9 +158,11 @@ function renderEvents(events) {
   const sourceEvents = Array.isArray(events) ? events : [];
   warnDuplicateEventIds(sourceEvents);
 
-  openEvents = Array.isArray(events)
-    ? events.filter((event) => event && event.status === "open")
-    : [];
+  openEvents = sortEventsByDate(
+    Array.isArray(events)
+      ? events.filter((event) => event && event.status === "open")
+      : []
+  );
 
   eventList.innerHTML = "";
   eventSelect.innerHTML = '<option value="">イベントを選択してください</option>';
@@ -140,13 +214,23 @@ function renderEvents(events) {
     title.className = "event-title";
     title.textContent = createText(event.title);
 
+    const presenter = document.createElement("p");
+    presenter.className = "event-presenter";
+    presenter.textContent = hasText(event.presenter) ? String(event.presenter).trim() : "";
+
     const meta = document.createElement("dl");
     meta.className = "event-meta";
-    [
+    const ticketDisplay = getTicketDisplay(event);
+    const metaRows = [
       ["Venue", createText(event.venue)],
-      ["Open / Start", `${createText(event.open_time)} / ${createText(event.start_time)}`],
-      ["ADV / DOOR", `${createText(event.adv_price)} / ${createText(event.door_price)}`]
-    ].forEach(([label, value]) => {
+      ["Open / Start", `${createText(event.open_time)} / ${createText(event.start_time)}`]
+    ];
+
+    if (ticketDisplay) {
+      metaRows.push([ticketDisplay.label, ticketDisplay.value]);
+    }
+
+    metaRows.forEach(([label, value]) => {
       const row = document.createElement("div");
       const term = document.createElement("dt");
       const description = document.createElement("dd");
@@ -180,7 +264,11 @@ function renderEvents(events) {
       selectEventForReservation(button.dataset.eventId);
     });
 
-    body.append(date, title, meta);
+    body.append(date);
+    if (hasText(event.presenter)) {
+      body.appendChild(presenter);
+    }
+    body.append(title, meta);
     if (hasText(event.public_note)) {
       body.appendChild(publicNote);
     }
