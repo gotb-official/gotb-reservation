@@ -314,7 +314,8 @@ main {
 }
 
 .reserve-button,
-.submit-button {
+.submit-button,
+.related-image-button {
   width: 100%;
   min-height: 50px;
   border: 0;
@@ -329,7 +330,8 @@ main {
 }
 
 .reserve-button:hover,
-.submit-button:hover {
+.submit-button:hover,
+.related-image-button:hover {
   filter: brightness(1.08);
 }
 
@@ -478,6 +480,49 @@ textarea::placeholder {
 .flyer-modal-close:focus-visible {
   outline: 3px solid var(--blue);
   outline-offset: 3px;
+}
+
+.flyer-modal-nav {
+  position: fixed;
+  top: 50%;
+  z-index: 1001;
+  width: 48px;
+  height: 58px;
+  border: 1px solid rgba(255, 106, 0, 0.82);
+  border-radius: 8px;
+  background: rgba(10, 10, 10, 0.82);
+  color: #fff;
+  font-size: 2.6rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.flyer-modal-prev {
+  left: 10px;
+}
+
+.flyer-modal-next {
+  right: 10px;
+}
+
+.flyer-modal-counter {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  z-index: 1001;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 106, 0, 0.72);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font-weight: 900;
+}
+
+.is-hidden {
+  display: none !important;
 }
 
 footer {

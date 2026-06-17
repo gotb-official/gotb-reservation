@@ -9,10 +9,15 @@ const formMessage = document.getElementById("formMessage");
 const flyerModal = document.getElementById("flyerModal");
 const flyerModalImage = document.getElementById("flyerModalImage");
 const flyerModalClose = document.getElementById("flyerModalClose");
+const flyerModalPrev = document.getElementById("flyerModalPrev");
+const flyerModalNext = document.getElementById("flyerModalNext");
+const flyerModalCounter = document.getElementById("flyerModalCounter");
 
 let openEvents = [];
 let jsonpTimeoutId;
 let lastFocusedElement = null;
+let modalImages = [];
+let currentImageIndex = 0;
 
 function setEventsMessage(message, hidden = false) {
   eventsMessage.textContent = message;
@@ -120,10 +125,53 @@ function getTicketDisplay(event) {
   return null;
 }
 
-function openFlyerModal(src, alt) {
+function getRelatedImageUrls(event) {
+  return String((event && event.related_image_urls) || "")
+    .split(/\r?\n/)
+    .map((url) => url.trim())
+    .filter(Boolean);
+}
+
+function getEventImages(event) {
+  const images = [];
+
+  if (hasText(event.flyer_url)) {
+    images.push({
+      src: String(event.flyer_url).trim(),
+      alt: `${createText(event.title)} flyer`
+    });
+  }
+
+  getRelatedImageUrls(event).forEach((url, index) => {
+    images.push({
+      src: url,
+      alt: `${createText(event.title)} related image ${index + 1}`
+    });
+  });
+
+  return images;
+}
+
+function renderModalImage() {
+  const image = modalImages[currentImageIndex];
+  if (!image) {
+    return;
+  }
+
+  flyerModalImage.src = image.src;
+  flyerModalImage.alt = image.alt;
+  flyerModalCounter.textContent = `${currentImageIndex + 1} / ${modalImages.length}`;
+  const hasMultipleImages = modalImages.length > 1;
+  flyerModalPrev.classList.toggle("is-hidden", !hasMultipleImages);
+  flyerModalNext.classList.toggle("is-hidden", !hasMultipleImages);
+  flyerModalCounter.classList.toggle("is-hidden", !hasMultipleImages);
+}
+
+function openFlyerModal(images, startIndex = 0) {
+  modalImages = images;
+  currentImageIndex = startIndex;
   lastFocusedElement = document.activeElement;
-  flyerModalImage.src = src;
-  flyerModalImage.alt = alt;
+  renderModalImage();
   flyerModal.classList.add("is-open");
   flyerModal.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
@@ -139,6 +187,8 @@ function closeFlyerModal() {
   flyerModal.setAttribute("aria-hidden", "true");
   flyerModalImage.src = "";
   flyerModalImage.alt = "";
+  modalImages = [];
+  currentImageIndex = 0;
   document.body.classList.remove("modal-open");
 
   if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
@@ -184,6 +234,7 @@ function renderEvents(events) {
     const card = document.createElement("article");
     card.className = "event-card";
     card.dataset.eventId = createText(event.event_id, "");
+    const eventImages = getEventImages(event);
 
     if (hasText(event.flyer_url)) {
       const flyerButton = document.createElement("button");
@@ -198,7 +249,7 @@ function renderEvents(events) {
 
       flyerButton.appendChild(image);
       flyerButton.addEventListener("click", () => {
-        openFlyerModal(String(event.flyer_url).trim(), image.alt);
+        openFlyerModal(eventImages, 0);
       });
       card.appendChild(flyerButton);
     }
@@ -264,6 +315,14 @@ function renderEvents(events) {
       selectEventForReservation(button.dataset.eventId);
     });
 
+    const relatedButton = document.createElement("button");
+    relatedButton.type = "button";
+    relatedButton.className = "related-image-button";
+    relatedButton.textContent = "関連画像を見る";
+    relatedButton.addEventListener("click", () => {
+      openFlyerModal(eventImages, hasText(event.flyer_url) ? 1 : 0);
+    });
+
     body.append(date);
     if (hasText(event.presenter)) {
       body.appendChild(presenter);
@@ -271,6 +330,9 @@ function renderEvents(events) {
     body.append(title, meta);
     if (hasText(event.public_note)) {
       body.appendChild(publicNote);
+    }
+    if (!hasText(event.flyer_url) && eventImages.length) {
+      body.appendChild(relatedButton);
     }
     body.appendChild(button);
     card.appendChild(body);
@@ -359,6 +421,20 @@ reservationForm.addEventListener("submit", async (event) => {
 });
 
 flyerModalClose.addEventListener("click", closeFlyerModal);
+
+flyerModalPrev.addEventListener("click", (event) => {
+  event.stopPropagation();
+  if (!modalImages.length) return;
+  currentImageIndex = (currentImageIndex - 1 + modalImages.length) % modalImages.length;
+  renderModalImage();
+});
+
+flyerModalNext.addEventListener("click", (event) => {
+  event.stopPropagation();
+  if (!modalImages.length) return;
+  currentImageIndex = (currentImageIndex + 1) % modalImages.length;
+  renderModalImage();
+});
 
 flyerModal.addEventListener("click", (event) => {
   if (event.target === flyerModal) {
