@@ -174,8 +174,11 @@ main {
 }
 
 .event-card {
+  display: flex;
+  flex-direction: column;
   flex: 0 0 88vw;
   max-width: 420px;
+  min-height: 650px;
   scroll-snap-align: start;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -184,10 +187,21 @@ main {
   box-shadow: var(--shadow);
 }
 
+.event-media {
+  position: relative;
+  flex: 0 0 auto;
+  height: 200px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(255, 106, 0, 0.18), rgba(23, 168, 232, 0.1)),
+    #050505;
+}
+
 .flyer-button {
   position: relative;
   display: block;
   width: 100%;
+  height: 100%;
   padding: 0;
   border: 0;
   background: #000;
@@ -199,7 +213,7 @@ main {
 .flyer-button img {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  height: 100%;
   object-fit: cover;
   background: #000;
   transition: transform 0.2s ease, filter 0.2s ease;
@@ -230,12 +244,88 @@ main {
   outline-offset: -3px;
 }
 
+.flyer-placeholder {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(255, 106, 0, 0.18), rgba(23, 168, 232, 0.12) 58%, rgba(0, 0, 0, 0.3));
+  background-size: 22px 22px, 22px 22px, auto;
+  color: var(--text);
+  text-align: center;
+}
+
+.flyer-placeholder span {
+  color: var(--blue);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.flyer-placeholder strong {
+  color: var(--orange);
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.flyer-placeholder-button {
+  cursor: zoom-in;
+}
+
+.flyer-placeholder-button strong {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 106, 0, 0.7);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+  font-family: Arial, "Helvetica Neue", sans-serif;
+  font-size: 0.98rem;
+}
+
+.flyer-placeholder-button:hover strong {
+  background: var(--orange);
+  color: #000;
+}
+
+.flyer-placeholder-button:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: -3px;
+}
+
+.image-count-badge {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 6px 9px;
+  border: 1px solid rgba(23, 168, 232, 0.72);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.76);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+}
+
 .event-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 18px;
 }
 
 .event-date {
   display: inline-flex;
+  align-self: flex-start;
   margin-bottom: 10px;
   padding: 4px 9px;
   background: var(--blue-dark);
@@ -245,24 +335,40 @@ main {
 }
 
 .event-title {
-  margin-bottom: 12px;
+  display: -webkit-box;
+  min-height: 3.1rem;
+  margin-bottom: 14px;
+  overflow: hidden;
   font-size: 1.35rem;
   line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .event-presenter {
+  display: -webkit-box;
+  min-height: 2.2rem;
   margin: 0 0 5px;
+  overflow: hidden;
   color: var(--blue);
   font-size: 0.82rem;
   font-weight: 900;
   line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.event-presenter.is-empty {
+  visibility: hidden;
 }
 
 .event-meta {
   display: grid;
   gap: 8px;
-  margin: 0 0 18px;
+  min-height: 138px;
+  margin: 0 0 14px;
   color: var(--muted);
+  align-content: start;
 }
 
 .event-meta div {
@@ -286,7 +392,7 @@ main {
 .public-note {
   display: grid;
   gap: 8px;
-  margin: 0 0 18px;
+  margin: 0;
   padding: 12px;
   border: 1px solid rgba(255, 106, 0, 0.5);
   border-left: 4px solid var(--orange);
@@ -311,6 +417,15 @@ main {
   font-size: 0.94rem;
   font-weight: 800;
   line-height: 1.5;
+}
+
+.event-note-slot {
+  min-height: 92px;
+  margin-bottom: 16px;
+}
+
+.event-actions {
+  margin-top: auto;
 }
 
 .reserve-button,
@@ -550,7 +665,12 @@ footer {
 
   .event-card {
     max-width: none;
+    min-height: 720px;
     scroll-snap-align: none;
+  }
+
+  .event-media {
+    height: 220px;
   }
 
   .reservation-panel {

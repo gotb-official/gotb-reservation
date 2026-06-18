@@ -235,12 +235,16 @@ function renderEvents(events) {
     card.className = "event-card";
     card.dataset.eventId = createText(event.event_id, "");
     const eventImages = getEventImages(event);
+    const hasFlyer = hasText(event.flyer_url);
 
-    if (hasText(event.flyer_url)) {
+    const media = document.createElement("div");
+    media.className = "event-media";
+
+    if (hasFlyer) {
       const flyerButton = document.createElement("button");
       flyerButton.type = "button";
       flyerButton.className = "flyer-button";
-      flyerButton.setAttribute("aria-label", `${createText(event.title)} のフライヤーを拡大表示`);
+      flyerButton.setAttribute("aria-label", `${createText(event.title)} の画像を拡大表示`);
 
       const image = document.createElement("img");
       image.src = String(event.flyer_url).trim();
@@ -251,8 +255,37 @@ function renderEvents(events) {
       flyerButton.addEventListener("click", () => {
         openFlyerModal(eventImages, 0);
       });
-      card.appendChild(flyerButton);
+      media.appendChild(flyerButton);
+
+      if (eventImages.length > 1) {
+        const imageCount = document.createElement("span");
+        imageCount.className = "image-count-badge";
+        imageCount.textContent = `画像 1 / ${eventImages.length}`;
+        media.appendChild(imageCount);
+      }
+    } else if (eventImages.length) {
+      const relatedMediaButton = document.createElement("button");
+      relatedMediaButton.type = "button";
+      relatedMediaButton.className = "flyer-placeholder flyer-placeholder-button";
+      relatedMediaButton.setAttribute("aria-label", `${createText(event.title)} の関連画像を表示`);
+      relatedMediaButton.innerHTML = "<span>GET ON THE BRIDGE</span><strong>関連画像を見る</strong>";
+      relatedMediaButton.addEventListener("click", () => {
+        openFlyerModal(eventImages, 0);
+      });
+      media.appendChild(relatedMediaButton);
+
+      const imageCount = document.createElement("span");
+      imageCount.className = "image-count-badge";
+      imageCount.textContent = `画像 ${eventImages.length}枚`;
+      media.appendChild(imageCount);
+    } else {
+      const placeholder = document.createElement("div");
+      placeholder.className = "flyer-placeholder";
+      placeholder.innerHTML = "<span>GET ON THE BRIDGE</span><strong>NO FLYER</strong>";
+      media.appendChild(placeholder);
     }
+
+    card.appendChild(media);
 
     const body = document.createElement("div");
     body.className = "event-body";
@@ -267,7 +300,13 @@ function renderEvents(events) {
 
     const presenter = document.createElement("p");
     presenter.className = "event-presenter";
-    presenter.textContent = hasText(event.presenter) ? String(event.presenter).trim() : "";
+    if (hasText(event.presenter)) {
+      presenter.textContent = String(event.presenter).trim();
+    } else {
+      presenter.classList.add("is-empty");
+      presenter.setAttribute("aria-hidden", "true");
+      presenter.textContent = "GET ON THE BRIDGE";
+    }
 
     const meta = document.createElement("dl");
     meta.className = "event-meta";
@@ -315,26 +354,20 @@ function renderEvents(events) {
       selectEventForReservation(button.dataset.eventId);
     });
 
-    const relatedButton = document.createElement("button");
-    relatedButton.type = "button";
-    relatedButton.className = "related-image-button";
-    relatedButton.textContent = "関連画像を見る";
-    relatedButton.addEventListener("click", () => {
-      openFlyerModal(eventImages, hasText(event.flyer_url) ? 1 : 0);
-    });
+    const noteSlot = document.createElement("div");
+    noteSlot.className = "event-note-slot";
+
+    if (hasText(event.public_note)) {
+      noteSlot.appendChild(publicNote);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "event-actions";
+    actions.appendChild(button);
 
     body.append(date);
-    if (hasText(event.presenter)) {
-      body.appendChild(presenter);
-    }
-    body.append(title, meta);
-    if (hasText(event.public_note)) {
-      body.appendChild(publicNote);
-    }
-    if (!hasText(event.flyer_url) && eventImages.length) {
-      body.appendChild(relatedButton);
-    }
-    body.appendChild(button);
+    body.append(presenter, title, meta);
+    body.append(noteSlot, actions);
     card.appendChild(body);
     eventList.appendChild(card);
   });
