@@ -354,6 +354,10 @@ function renderEvents(events) {
       selectEventForReservation(button.dataset.eventId);
     });
 
+    const actions = document.createElement("div");
+    actions.className = "event-actions";
+    actions.appendChild(button);
+
     const noteSlot = document.createElement("div");
     noteSlot.className = "event-note-slot";
 
@@ -361,13 +365,10 @@ function renderEvents(events) {
       noteSlot.appendChild(publicNote);
     }
 
-    const actions = document.createElement("div");
-    actions.className = "event-actions";
-    actions.appendChild(button);
-
+    card.appendChild(actions);
     body.append(date);
     body.append(presenter, title, meta);
-    body.append(noteSlot, actions);
+    body.append(noteSlot);
     card.appendChild(body);
     eventList.appendChild(card);
   });
