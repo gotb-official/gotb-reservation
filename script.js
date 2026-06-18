@@ -90,12 +90,33 @@ function getTicketType(event) {
   return "none";
 }
 
+function formatPrice(value) {
+  if (!value) {
+    return "";
+  }
+
+  const text = String(value).trim();
+  if (/^free$/i.test(text)) {
+    return "FREE";
+  }
+  if (text.includes("¥")) {
+    return text;
+  }
+
+  const numeric = text.replace(/[^\d]/g, "");
+  if (!numeric) {
+    return text;
+  }
+
+  return `¥${Number(numeric).toLocaleString("ja-JP")}`;
+}
+
 function getTicketDisplay(event) {
   const ticketType = getTicketType(event);
 
   if (ticketType === "adv_door") {
-    const advPrice = hasText(event.adv_price) ? String(event.adv_price).trim() : "";
-    const doorPrice = hasText(event.door_price) ? String(event.door_price).trim() : "";
+    const advPrice = formatPrice(event.adv_price);
+    const doorPrice = formatPrice(event.door_price);
     if (!advPrice && !doorPrice) {
       return null;
     }
@@ -106,12 +127,13 @@ function getTicketDisplay(event) {
   }
 
   if (ticketType === "single") {
-    if (!hasText(event.ticket_price)) {
+    const ticketPrice = formatPrice(event.ticket_price);
+    if (!ticketPrice) {
       return null;
     }
     return {
       label: "TICKET",
-      value: String(event.ticket_price).trim()
+      value: ticketPrice
     };
   }
 
@@ -298,6 +320,10 @@ function renderEvents(events) {
     title.className = "event-title";
     title.textContent = createText(event.title);
 
+    const subtitle = document.createElement("p");
+    subtitle.className = "event-subtitle";
+    subtitle.textContent = hasText(event.subtitle) ? String(event.subtitle).trim() : "";
+
     const presenter = document.createElement("p");
     presenter.className = "event-presenter";
     if (hasText(event.presenter)) {
@@ -368,6 +394,9 @@ function renderEvents(events) {
     card.appendChild(actions);
     body.append(date);
     body.append(presenter, title, meta);
+    if (hasText(event.subtitle)) {
+      body.insertBefore(subtitle, meta);
+    }
     body.append(noteSlot);
     card.appendChild(body);
     eventList.appendChild(card);
